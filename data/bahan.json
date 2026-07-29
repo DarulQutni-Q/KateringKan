@@ -1,0 +1,50 @@
+[
+    {
+        "id_bahan": "B001",
+        "nama": "Beras Putih",
+        "stok": 94600,
+        "satuan": "gram"
+    },
+    {
+        "id_bahan": "B002",
+        "nama": "Daging Sapi",
+        "stok": 46900,
+        "satuan": "gram"
+    },
+    {
+        "id_bahan": "B003",
+        "nama": "Kacang Tanah",
+        "stok": 19350,
+        "satuan": "gram"
+    },
+    {
+        "id_bahan": "B004",
+        "nama": "Brokoli",
+        "stok": 28050,
+        "satuan": "gram"
+    },
+    {
+        "id_bahan": "B005",
+        "nama": "Telor Ayam",
+        "stok": 88,
+        "satuan": "butir"
+    },
+    {
+        "id_bahan": "B006",
+        "nama": "Tepung Gandum (Gluten)",
+        "stok": 39860,
+        "satuan": "gram"
+    },
+    {
+        "id_bahan": "B007",
+        "nama": "Tepung Maizena (GF)",
+        "stok": 29750,
+        "satuan": "gram"
+    },
+    {
+        "id_bahan": "B008",
+        "nama": "Cina",
+        "stok": 8.0,
+        "satuan": "gr"
+    }
+]

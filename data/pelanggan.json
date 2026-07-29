@@ -1,0 +1,24 @@
+[
+    {
+        "id_pelanggan": "P001",
+        "nama": "Bapak Fulan",
+        "no_hp": "0811",
+        "daftar_alergi": []
+    },
+    {
+        "id_pelanggan": "P002",
+        "nama": "Ibu Fulanah",
+        "no_hp": "0822",
+        "daftar_alergi": [
+            "B003"
+        ]
+    },
+    {
+        "id_pelanggan": "P003",
+        "nama": "Mbak Sehat",
+        "no_hp": "0833",
+        "daftar_alergi": [
+            "B006"
+        ]
+    }
+]

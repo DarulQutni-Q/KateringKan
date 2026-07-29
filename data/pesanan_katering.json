@@ -1,0 +1,26 @@
+[
+    {
+        "id_pesanan": "ORD-001",
+        "id_pelanggan": "P001",
+        "id_acara": null,
+        "menu_list": [
+            {
+                "id_menu": "M002",
+                "nama_lengkap": "Nasi Pecel Brokoli [EXPRESS]",
+                "porsi": 10,
+                "biaya_satuan": 34000.0
+            },
+            {
+                "id_menu": "M001",
+                "nama_lengkap": "Nasi Daging Biasa [EXPRESS]",
+                "porsi": 10,
+                "biaya_satuan": 50000.0
+            }
+        ],
+        "total_biaya": 840000.0,
+        "tanggal_produksi": "2026-12-01",
+        "tanggal_pengiriman": "2026-12-02",
+        "alamat": "JAWA",
+        "status": "Diproduksi"
+    }
+]

@@ -1,0 +1,12 @@
+[
+    {
+        "id_acara": "A01",
+        "nama_acara": "Pernikahan Budi",
+        "tipe_acara": "Wedding"
+    },
+    {
+        "id_acara": "A02",
+        "nama_acara": "Rapat Paripurna",
+        "tipe_acara": "Corporate"
+    }
+]

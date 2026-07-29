@@ -1,0 +1,53 @@
+[
+    {
+        "id_menu": "M001",
+        "nama": "Nasi Daging Biasa",
+        "harga_dasar": 35000,
+        "resep_id": "R01",
+        "daftar_bahan": {
+            "B001": 200,
+            "B002": 150,
+            "B006": 10
+        },
+        "stok_porsi": 10,
+        "tipe": "MenuReguler"
+    },
+    {
+        "id_menu": "M002",
+        "nama": "Nasi Pecel Brokoli",
+        "harga_dasar": 20000,
+        "resep_id": "R02",
+        "daftar_bahan": {
+            "B001": 200,
+            "B004": 150,
+            "B003": 50
+        },
+        "stok_porsi": 10,
+        "tipe": "MenuVegetarian"
+    },
+    {
+        "id_menu": "M003",
+        "nama": "Daging Krispi Diet",
+        "harga_dasar": 40000,
+        "resep_id": "R03",
+        "daftar_bahan": {
+            "B002": 200,
+            "B007": 50
+        },
+        "stok_porsi": 0,
+        "tipe": "MenuBebasGluten"
+    },
+    {
+        "id_menu": "M004",
+        "nama": "Cina",
+        "harga_dasar": 40000.0,
+        "resep_id": "R01",
+        "daftar_bahan": {
+            "B001": 200,
+            "B002": 150,
+            "B006": 10
+        },
+        "stok_porsi": 0,
+        "tipe": "MenuVegetarian"
+    }
+]

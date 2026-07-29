@@ -1,0 +1,31 @@
+[
+    {
+        "id_resep": "R01",
+        "nama_resep": "Resep Nasi Daging Sapi",
+        "komposisi_bahan": {
+            "B001": 200,
+            "B002": 150,
+            "B006": 10
+        },
+        "instruksi": "Rebus daging, masak nasi"
+    },
+    {
+        "id_resep": "R02",
+        "nama_resep": "Resep Nasi Sayur Kacang",
+        "komposisi_bahan": {
+            "B001": 200,
+            "B004": 150,
+            "B003": 50
+        },
+        "instruksi": "Rebus sayur, siram bumbu kacang"
+    },
+    {
+        "id_resep": "R03",
+        "nama_resep": "Resep Daging Krispi GF",
+        "komposisi_bahan": {
+            "B002": 200,
+            "B007": 50
+        },
+        "instruksi": "Balur daging ke maizena, goreng"
+    }
+]
