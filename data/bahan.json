@@ -2,13 +2,13 @@
     {
         "id_bahan": "B001",
         "nama": "Beras Putih",
-        "stok": 94600,
+        "stok": 94400,
         "satuan": "gram"
     },
     {
         "id_bahan": "B002",
         "nama": "Daging Sapi",
-        "stok": 46900,
+        "stok": 46750,
         "satuan": "gram"
     },
     {
@@ -32,7 +32,7 @@
     {
         "id_bahan": "B006",
         "nama": "Tepung Gandum (Gluten)",
-        "stok": 39860,
+        "stok": 39850,
         "satuan": "gram"
     },
     {
@@ -44,7 +44,7 @@
     {
         "id_bahan": "B008",
         "nama": "Cina",
-        "stok": 8.0,
+        "stok": 0.0,
         "satuan": "gr"
     }
 ]

@@ -176,6 +176,28 @@ class KateringManager:
             return True
         return False
 
+    def hapus_bahan(self, id_bahan):
+        if id_bahan not in self.daftar_bahan:
+            return False
+
+        # Cek referensi: dipakai di resep mana & alergi siapa
+        dipakai_resep = [r.nama_resep for r in self.daftar_resep.values()
+                         if id_bahan in (r.komposisi_bahan or {})]
+        dipakai_alergi = [p.nama for p in self.daftar_pelanggan.values()
+                          if id_bahan in (p.daftar_alergi or [])]
+
+        if dipakai_resep or dipakai_alergi:
+            alasan = []
+            if dipakai_resep:
+                alasan.append("resep: " + ", ".join(dipakai_resep))
+            if dipakai_alergi:
+                alasan.append("alergi: " + ", ".join(dipakai_alergi))
+            raise ValueError("Bahan masih dipakai di " + " & ".join(alasan))
+
+        del self.daftar_bahan[id_bahan]
+        self.simpan_semua_data()
+        return True
+
     def tambah_pelanggan(self, nama, no_hp, daftar_alergi):
         id_baru = f"P{len(self.daftar_pelanggan)+1:03d}"
         p = Pelanggan(id_baru, nama, no_hp, daftar_alergi)
@@ -196,6 +218,40 @@ class KateringManager:
         self.daftar_resep[id_baru] = r
         self.simpan_semua_data()
         return r
+
+    def update_resep(self, id_resep, nama_resep, komposisi_bahan, instruksi):
+        if id_resep not in self.daftar_resep:
+            return False
+        r = self.daftar_resep[id_resep]
+        r.nama_resep = nama_resep
+        r.komposisi_bahan = komposisi_bahan
+        r.instruksi = instruksi
+        self._refresh_menu_dari_resep(id_resep)
+        self.simpan_semua_data()
+        return True
+
+    def _refresh_menu_dari_resep(self, id_resep):
+        for m in self.daftar_menu.values():
+            if m._resep and m._resep.id_resep == id_resep:
+                m.sync_bahan_dari_resep()
+
+    def tambah_bahan_ke_resep(self, id_resep, id_bahan, jumlah):
+        if id_resep not in self.daftar_resep or id_bahan not in self.daftar_bahan:
+            return False
+        r = self.daftar_resep[id_resep]
+        komposisi = dict(r.komposisi_bahan or {})
+        komposisi[id_bahan] = komposisi.get(id_bahan, 0) + float(jumlah)
+        return self.update_resep(id_resep, r.nama_resep, komposisi, r.instruksi)
+
+    def hapus_bahan_dari_resep(self, id_resep, id_bahan):
+        if id_resep not in self.daftar_resep:
+            return False
+        r = self.daftar_resep[id_resep]
+        komposisi = dict(r.komposisi_bahan or {})
+        if id_bahan in komposisi:
+            del komposisi[id_bahan]
+            return self.update_resep(id_resep, r.nama_resep, komposisi, r.instruksi)
+        return False
 
     def tambah_menu(self, tipe, nama, harga_dasar, id_resep):
         id_baru = f"M{len(self.daftar_menu)+1:03d}"

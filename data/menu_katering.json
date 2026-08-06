@@ -9,7 +9,7 @@
             "B002": 150,
             "B006": 10
         },
-        "stok_porsi": 10,
+        "stok_porsi": 11,
         "tipe": "MenuReguler"
     },
     {
@@ -49,5 +49,18 @@
         },
         "stok_porsi": 0,
         "tipe": "MenuVegetarian"
+    },
+    {
+        "id_menu": "M005",
+        "nama": "Darul",
+        "harga_dasar": 30000000.0,
+        "resep_id": "R01",
+        "daftar_bahan": {
+            "B001": 200,
+            "B002": 150,
+            "B006": 10
+        },
+        "stok_porsi": 0,
+        "tipe": "MenuReguler"
     }
 ]

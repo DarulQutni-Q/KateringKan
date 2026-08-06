@@ -11,11 +11,13 @@ FONT_TOMBOL = ("Helvetica", 19, "bold")
 
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
+ctk.set_widget_scaling(0.9)
 
 class KateringAppGUI(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.km = KateringManager()
+        self.resep_aktif = None
 
         self.title("KateringKU - Sistem Manajemen Pesanan & Logistik")
         self.geometry("1200x800") 
@@ -63,6 +65,7 @@ class KateringAppGUI(ctk.CTk):
         self.main_frame = ctk.CTkFrame(self, corner_radius=10, fg_color="transparent")
         self.main_frame.grid(row=0, column=1, padx=20, pady=20, sticky="nsew")
         self.main_frame.grid_columnconfigure(0, weight=1)
+        self.main_frame.grid_columnconfigure(1, weight=1)
         self.main_frame.grid_rowconfigure(1, weight=1)
 
     def bersihin_layar(self):
@@ -79,13 +82,13 @@ class KateringAppGUI(ctk.CTk):
             ctk.CTkLabel(self.main_frame, text="Inventaris Bahan Baku", font=FONT_JUDUL).grid(row=0, column=0, pady=(0, 20))
 
             # --- Kiri: Daftar Stok (Format Tabel) ---
-            frame_kiri = ctk.CTkScrollableFrame(self.main_frame, width=500)
+            frame_kiri = ctk.CTkScrollableFrame(self.main_frame, width=620)
             frame_kiri.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
             
             ctk.CTkLabel(frame_kiri, text="Stok Saat Ini:", font=("Helvetica", 21, "bold")).grid(row=0, column=0, columnspan=4, pady=(10, 20), sticky="w")
             
             # Header Tabel
-            headers = ["ID", "NAMA BAHAN", "STOK", "SATUAN"]
+            headers = ["ID", "NAMA BAHAN", "STOK", "SATUAN", "AKSI"]
             for col, text in enumerate(headers):
                 lbl_header = ctk.CTkLabel(frame_kiri, text=text, font=("Helvetica", 19, "bold"), fg_color="#1E3A8A", corner_radius=5)
                 lbl_header.grid(row=1, column=col, padx=5, pady=5, sticky="ew", ipadx=10, ipady=5)
@@ -97,10 +100,12 @@ class KateringAppGUI(ctk.CTk):
                 ctk.CTkLabel(frame_kiri, text=bahan.nama, font=FONT_NORMAL).grid(row=baris, column=1, padx=5, pady=2, sticky="w")
                 ctk.CTkLabel(frame_kiri, text=str(bahan.stok), font=FONT_NORMAL).grid(row=baris, column=2, padx=5, pady=2, sticky="e")
                 ctk.CTkLabel(frame_kiri, text=bahan.satuan, font=FONT_NORMAL).grid(row=baris, column=3, padx=5, pady=2, sticky="w")
+                ctk.CTkButton(frame_kiri, text="X", width=40, font=FONT_TOMBOL, fg_color="#E74C3C", hover_color="#C0392B",
+                              command=lambda id_b=bahan.id_bahan: self.hapus_bahan_gui(id_b)).grid(row=baris, column=4, padx=5, pady=2)
                 baris += 1
 
             # --- Kanan: Form Tambah/Update Bahan ---
-            frame_kanan = ctk.CTkFrame(self.main_frame)
+            frame_kanan = ctk.CTkFrame(self.main_frame, width=400)
             frame_kanan.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
 
             ctk.CTkLabel(frame_kanan, text="Tambah / Update Stok", font=("Helvetica", 21, "bold")).pack(pady=10)
@@ -213,36 +218,29 @@ class KateringAppGUI(ctk.CTk):
         elif nama_halaman == "menu":
             ctk.CTkLabel(self.main_frame, text="Kelola Menu & Resep", font=FONT_JUDUL).grid(row=0, column=0, pady=(0, 20))
             
-            frame_kiri = ctk.CTkScrollableFrame(self.main_frame, width=450)
+            frame_kiri = ctk.CTkScrollableFrame(self.main_frame, width=560)
             frame_kiri.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
-            
-            ctk.CTkLabel(frame_kiri, text="Daftar Menu Katering:", font=("Helvetica", 21, "bold")).pack(pady=10)
-            for m in self.km.daftar_menu.values():
-                teks = f"[{m.id_menu}] {m.nama}\nRp {m.harga_dasar:,.0f} | Porsi Terjual: {m.stok_porsi}"
-                f_item = ctk.CTkFrame(frame_kiri)
-                f_item.pack(fill="x", padx=10, pady=5)
-                ctk.CTkLabel(f_item, text=teks, font=FONT_NORMAL, justify="left").pack(side="left", padx=10, pady=5)
-                ctk.CTkButton(f_item, text="X", width=40, font=FONT_TOMBOL, fg_color="#E74C3C", hover_color="#C0392B", 
-                              command=lambda id_m=m.id_menu: self.hapus_menu_gui(id_m)).pack(side="right", padx=10)
+            self._render_daftar_menu(frame_kiri)
 
-            frame_kanan = ctk.CTkScrollableFrame(self.main_frame)
+            frame_kanan = ctk.CTkScrollableFrame(self.main_frame, width=520)
             frame_kanan.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
 
-            ctk.CTkLabel(frame_kanan, text="Bikin Menu Baru", font=("Helvetica", 21, "bold")).pack(pady=10)
+            # ===== Section 1: Buat Menu Baru =====
+            ctk.CTkLabel(frame_kanan, text="Bikin Menu Baru", font=("Helvetica", 21, "bold")).pack(pady=(10, 5))
             
-            cmb_tipe = ctk.CTkComboBox(frame_kanan, values=["MenuReguler", "MenuVegetarian", "MenuBebasGluten"], font=FONT_NORMAL, dropdown_font=FONT_NORMAL, state="readonly", width=300)
+            cmb_tipe = ctk.CTkComboBox(frame_kanan, values=["MenuReguler", "MenuVegetarian", "MenuBebasGluten"], font=FONT_NORMAL, dropdown_font=FONT_NORMAL, state="readonly", width=380)
             cmb_tipe.set("MenuReguler")
             cmb_tipe.pack(padx=20, pady=5)
             
-            ent_nama_m = ctk.CTkEntry(frame_kanan, placeholder_text="Nama Menu", font=FONT_NORMAL, width=300)
+            ent_nama_m = ctk.CTkEntry(frame_kanan, placeholder_text="Nama Menu", font=FONT_NORMAL, width=380)
             ent_nama_m.pack(padx=20, pady=5)
             
-            ent_harga_m = ctk.CTkEntry(frame_kanan, placeholder_text="Harga Dasar (Rp)", font=FONT_NORMAL, width=300)
+            ent_harga_m = ctk.CTkEntry(frame_kanan, placeholder_text="Harga Dasar (Rp)", font=FONT_NORMAL, width=380)
             ent_harga_m.pack(padx=20, pady=5)
 
-            ctk.CTkLabel(frame_kanan, text="Pilih Resep:", font=FONT_NORMAL).pack(anchor="w", padx=20, pady=(10,0))
+            ctk.CTkLabel(frame_kanan, text="Pilih Resep:", font=FONT_NORMAL).pack(anchor="w", padx=20, pady=(10, 0))
             list_resep = [f"{r.id_resep} - {r.nama_resep}" for r in self.km.daftar_resep.values()]
-            cmb_resep = ctk.CTkComboBox(frame_kanan, values=list_resep, font=FONT_NORMAL, dropdown_font=FONT_NORMAL, state="readonly", width=300)
+            cmb_resep = ctk.CTkComboBox(frame_kanan, values=list_resep, font=FONT_NORMAL, dropdown_font=FONT_NORMAL, state="readonly", width=380)
             if list_resep: cmb_resep.set(list_resep[0])
             cmb_resep.pack(padx=20, pady=5)
 
@@ -258,7 +256,100 @@ class KateringAppGUI(ctk.CTk):
                 except Exception as e:
                     messagebox.showerror("Error", f"Gagal tambah menu: {e}")
 
-            ctk.CTkButton(frame_kanan, text="Simpan Menu", font=FONT_TOMBOL, command=proses_tambah_menu).pack(pady=20)
+            ctk.CTkButton(frame_kanan, text="Simpan Menu", font=FONT_TOMBOL, command=proses_tambah_menu).pack(pady=(10, 20))
+
+            # ===== Section 2: Kelola Komposisi Bahan (Resep) =====
+            ctk.CTkFrame(frame_kanan, height=2, fg_color="#333333").pack(fill="x", padx=20, pady=10)
+            ctk.CTkLabel(frame_kanan, text="Kelola Komposisi Bahan (Resep)", font=("Helvetica", 21, "bold")).pack(pady=10)
+
+            ctk.CTkLabel(frame_kanan, text="Pilih Resep:", font=FONT_NORMAL).pack(anchor="w", padx=20, pady=(10, 0))
+            cmb_resep_kelola = ctk.CTkComboBox(frame_kanan, values=list_resep, font=FONT_NORMAL, dropdown_font=FONT_NORMAL, state="readonly", width=380)
+            if list_resep:
+                id_awal = self.resep_aktif if self.resep_aktif in self.km.daftar_resep else list_resep[0].split(" - ")[0]
+                self.resep_aktif = id_awal
+                cmb_resep_kelola.set(f"{id_awal} - {self.km.daftar_resep[id_awal].nama_resep}")
+            cmb_resep_kelola.pack(padx=20, pady=5)
+
+            frame_komposisi = ctk.CTkFrame(frame_kanan)
+            frame_komposisi.pack(fill="x", padx=20, pady=10)
+
+            def tampil_komposisi(id_resep):
+                for w in frame_komposisi.winfo_children():
+                    w.destroy()
+                r = self.km.daftar_resep.get(id_resep)
+                if not r:
+                    ctk.CTkLabel(frame_komposisi, text="Resep tidak ditemukan.", font=FONT_NORMAL).pack(pady=10)
+                    return
+                komposisi = r.komposisi_bahan or {}
+                if not komposisi:
+                    ctk.CTkLabel(frame_komposisi, text="(Belum ada bahan. Tambah di bawah.)", font=FONT_NORMAL, text_color="#9CA3AF").pack(pady=10)
+                    return
+                for id_b, jml in komposisi.items():
+                    b = self.km.daftar_bahan.get(id_b)
+                    nama_b = b.nama if b else f"{id_b} (hilang)"
+                    satuan = b.satuan if b else ""
+                    f_b = ctk.CTkFrame(frame_komposisi, fg_color="transparent")
+                    f_b.pack(fill="x", padx=5, pady=2)
+                    ctk.CTkLabel(f_b, text=f"{nama_b}: {jml:g} {satuan}", font=FONT_NORMAL, justify="left").pack(side="left", padx=5)
+                    ctk.CTkButton(f_b, text="X", width=40, font=FONT_TOMBOL, fg_color="#E74C3C", hover_color="#C0392B",
+                                  command=lambda rid=id_resep, bid=id_b: self.hapus_bahan_resep_gui(rid, bid, frame_kiri, tampil_komposisi)).pack(side="right", padx=5)
+
+            def pilih_resep_kelola(choice):
+                if choice:
+                    self.resep_aktif = choice.split(" - ")[0]
+                    tampil_komposisi(self.resep_aktif)
+
+            cmb_resep_kelola.configure(command=pilih_resep_kelola)
+
+            if list_resep:
+                tampil_komposisi(self.resep_aktif)
+
+            ctk.CTkLabel(frame_kanan, text="Tambah Bahan ke Resep:", font=FONT_NORMAL).pack(anchor="w", padx=20, pady=(10, 0))
+            list_bahan_gudang = [f"{b.id_bahan} - {b.nama}" for b in self.km.daftar_bahan.values()]
+            cmb_bahan_r = ctk.CTkComboBox(frame_kanan, values=list_bahan_gudang, font=FONT_NORMAL, dropdown_font=FONT_NORMAL, state="readonly", width=380)
+            if list_bahan_gudang: cmb_bahan_r.set(list_bahan_gudang[0])
+            cmb_bahan_r.pack(padx=20, pady=5)
+            ent_jml_r = ctk.CTkEntry(frame_kanan, placeholder_text="Jumlah bahan per porsi", font=FONT_NORMAL, width=380)
+            ent_jml_r.pack(padx=20, pady=5)
+
+            def proses_tambah_bahan_resep():
+                try:
+                    id_r = cmb_resep_kelola.get().split(" - ")[0]
+                    id_b = cmb_bahan_r.get().split(" - ")[0]
+                    jml = float(ent_jml_r.get())
+                    if jml <= 0:
+                        raise ValueError("Jumlah harus lebih dari 0")
+                    if self.km.tambah_bahan_ke_resep(id_r, id_b, jml):
+                        messagebox.showinfo("Sukses", "Bahan ditambahkan ke resep!")
+                        ent_jml_r.delete(0, "end")
+                        tampil_komposisi(id_r)
+                        self._render_daftar_menu(frame_kiri)
+                    else:
+                        messagebox.showerror("Error", "Resep atau bahan tidak valid.")
+                except Exception:
+                    messagebox.showerror("Error", "Isi jumlah dengan angka yang benar boss.")
+
+            ctk.CTkButton(frame_kanan, text="Tambah Bahan ke Resep", font=FONT_TOMBOL, command=proses_tambah_bahan_resep).pack(pady=(10, 20))
+
+            # ===== Section 3: Buat Resep Baru =====
+            ctk.CTkFrame(frame_kanan, height=2, fg_color="#333333").pack(fill="x", padx=20, pady=10)
+            ctk.CTkLabel(frame_kanan, text="Buat Resep Baru", font=("Helvetica", 21, "bold")).pack(pady=10)
+            ent_nama_resep = ctk.CTkEntry(frame_kanan, placeholder_text="Nama Resep", font=FONT_NORMAL, width=380)
+            ent_nama_resep.pack(padx=20, pady=5)
+            ent_instruksi = ctk.CTkEntry(frame_kanan, placeholder_text="Instruksi (opsional)", font=FONT_NORMAL, width=380)
+            ent_instruksi.pack(padx=20, pady=5)
+
+            def proses_buat_resep():
+                nama_r = ent_nama_resep.get().strip()
+                if not nama_r:
+                    messagebox.showerror("Error", "Nama resep wajib diisi boss.")
+                    return
+                r = self.km.tambah_resep(nama_r, {}, ent_instruksi.get().strip())
+                self.resep_aktif = r.id_resep
+                messagebox.showinfo("Sukses", f"Resep {r.id_resep} dibuat. Tambahkan bahannya di panel Kelola Komposisi.")
+                self.buka_halaman("menu")
+
+            ctk.CTkButton(frame_kanan, text="Simpan Resep Baru", font=FONT_TOMBOL, command=proses_buat_resep).pack(pady=(10, 20))
 
 
         # =========================================================================
@@ -318,9 +409,9 @@ class KateringAppGUI(ctk.CTk):
             self.cmb_pelanggan.grid(row=0, column=1, padx=10, pady=10)
 
             ctk.CTkLabel(form_container, text="Menu Utama:", font=FONT_NORMAL).grid(row=1, column=0, padx=10, pady=10, sticky="w")
-            list_menu = [f"{m.id_menu} - {m.nama} (Rp{int(m.hitung_biaya_porsi())})" for m in self.km.daftar_menu.values()]
+            list_menu = [f"{m.id_menu} - {m.nama} - {self._format_harga_menu_dropdown(m)}" for m in self.km.daftar_menu.values()]
             list_menu.insert(0, "Pilih Menu...")
-            self.cmb_menu1 = ctk.CTkComboBox(form_container, values=list_menu, font=FONT_NORMAL, dropdown_font=FONT_NORMAL, state="readonly", width=350, height=35)
+            self.cmb_menu1 = ctk.CTkComboBox(form_container, values=list_menu, font=FONT_NORMAL, dropdown_font=FONT_NORMAL, state="readonly", width=560, height=35)
             self.cmb_menu1.set("Pilih Menu...")
             self.cmb_menu1.grid(row=1, column=1, padx=10, pady=10)
             
@@ -330,7 +421,7 @@ class KateringAppGUI(ctk.CTk):
             self.ent_porsi1.grid(row=1, column=3, padx=10, pady=10)
 
             ctk.CTkLabel(form_container, text="Menu Tambahan (Paket):", font=FONT_NORMAL).grid(row=2, column=0, padx=10, pady=10, sticky="w")
-            self.cmb_menu2 = ctk.CTkComboBox(form_container, values=list_menu, font=FONT_NORMAL, dropdown_font=FONT_NORMAL, state="readonly", width=350, height=35)
+            self.cmb_menu2 = ctk.CTkComboBox(form_container, values=list_menu, font=FONT_NORMAL, dropdown_font=FONT_NORMAL, state="readonly", width=560, height=35)
             self.cmb_menu2.set("Pilih Menu...")
             self.cmb_menu2.grid(row=2, column=1, padx=10, pady=10)
             
@@ -385,10 +476,65 @@ class KateringAppGUI(ctk.CTk):
             self.km.hapus_pelanggan(id_p)
             self.buka_halaman("pelanggan")
 
+    def hapus_bahan_gui(self, id_bahan):
+        if messagebox.askyesno("Konfirmasi", "Beneran mau hapus bahan ini?"):
+            try:
+                self.km.hapus_bahan(id_bahan)
+                self.buka_halaman("dashboard")
+            except ValueError as e:
+                messagebox.showerror("Tidak Bisa Hapus", str(e))
+
     def hapus_menu_gui(self, id_m):
         if messagebox.askyesno("Konfirmasi", "Hapus menu ini dari daftar?"):
             self.km.hapus_menu(id_m)
             self.buka_halaman("menu")
+
+    def _format_harga_menu(self, menu):
+        harga = menu.hitung_biaya_porsi()
+        tipe = menu.__class__.__name__
+        if tipe == "MenuVegetarian":
+            return f"Rp {harga:,.0f} (diskon 5%)"
+        if tipe == "MenuBebasGluten":
+            return f"Rp {harga:,.0f} (markup 15%)"
+        return f"Rp {harga:,.0f}"
+
+    def _format_harga_menu_dropdown(self, menu):
+        harga = menu.hitung_biaya_porsi()
+        tipe = menu.__class__.__name__
+        if tipe == "MenuVegetarian":
+            return f"Rp {harga:,.0f} (-5%)"
+        if tipe == "MenuBebasGluten":
+            return f"Rp {harga:,.0f} (+15%)"
+        return f"Rp {harga:,.0f}"
+
+    def _render_daftar_menu(self, frame_kiri):
+        for w in frame_kiri.winfo_children():
+            w.destroy()
+
+        ctk.CTkLabel(frame_kiri, text="Daftar Menu Katering:", font=("Helvetica", 21, "bold")).pack(pady=10)
+        for m in self.km.daftar_menu.values():
+            nama_bahan = []
+            for id_b, jml in m.get_daftar_bahan().items():
+                b = self.km.daftar_bahan.get(id_b)
+                if b:
+                    nama_bahan.append(f"{b.nama} ({jml:g} {b.satuan})")
+                else:
+                    nama_bahan.append(f"{id_b} ({jml:g})")
+
+            teks = (f"[{m.id_menu}] {m.nama}\n"
+                    f"{self._format_harga_menu(m)} | Porsi Terjual: {m.stok_porsi}\n"
+                    f"Bahan: {', '.join(nama_bahan) if nama_bahan else '-'}")
+            f_item = ctk.CTkFrame(frame_kiri)
+            f_item.pack(fill="x", padx=10, pady=5)
+            ctk.CTkLabel(f_item, text=teks, font=FONT_NORMAL, justify="left").pack(side="left", padx=10, pady=5)
+            ctk.CTkButton(f_item, text="X", width=40, font=FONT_TOMBOL, fg_color="#E74C3C", hover_color="#C0392B",
+                          command=lambda id_m=m.id_menu: self.hapus_menu_gui(id_m)).pack(side="right", padx=10)
+
+    def hapus_bahan_resep_gui(self, id_resep, id_bahan, frame_kiri, refresh_komposisi):
+        if messagebox.askyesno("Konfirmasi", f"Hapus bahan ini dari resep {id_resep}?"):
+            if self.km.hapus_bahan_dari_resep(id_resep, id_bahan):
+                refresh_komposisi(id_resep)
+                self._render_daftar_menu(frame_kiri)
 
     def update_status_gui(self, id_p, status_baru):
         self.km.update_status_pesanan(id_p, status_baru)

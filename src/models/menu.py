@@ -25,6 +25,10 @@ class MenuKatering(ABC):
     def get_daftar_bahan(self):
         return self._daftar_bahan
 
+    def sync_bahan_dari_resep(self):
+        if self._resep:
+            self._daftar_bahan = self._resep.komposisi_bahan.copy()
+
     @abstractmethod
     def hitung_biaya_porsi(self):
         """Method wajib buat dioverride di subclass."""
