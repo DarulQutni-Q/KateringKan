@@ -8,7 +8,7 @@ Aplikasi katering berbasis desktop dengan antarmuka yang bersih (minimalis dark-
 
 ## Cara Instalasi
 1. Pastikan Python sudah terinstall.
-2. Buka terminal/CMD, masuk ke folder proyek `JokiDewa/`.
+2. Buka terminal/CMD, masuk ke folder proyek `KateringKan/`.
 3. Jalankan perintah instalasi dependensi:
    ```bash
    pip install -r requirements.txt
