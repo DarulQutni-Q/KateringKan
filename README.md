@@ -37,6 +37,14 @@ Ketika program pertama kali dijalankan, sistem akan men-generate data berikut ji
 4. **Validasi Stok**: Mencegah order kalau stok bahan di gudang ga cukup.
 5. **Ekspor CSV**: Generate laporan pesanan ke dalam bentuk `.csv`.
 
+## Struktur Proyek
+
+- `main.py` — entry point aplikasi
+- `src/` — kode aplikasi (GUI, layanan, model)
+- `data/` — data JSON (dibuat otomatis saat pertama jalan)
+- `tests/` — unit test
+- `requirements.txt` — dependensi
+
 ## Pengujian (Unit Tests)
 Ada 8 unit test yang jalanin skenario normal dan *error handling*. Buat ngetes:
 ```bash
